@@ -1,7 +1,6 @@
 import { getBabelOutputPlugin } from '@rollup/plugin-babel';
 
-export default commandLineArgs => {
-  return {
+export default {
     plugins: [
       getBabelOutputPlugin({
         presets: ['@babel/preset-env']
@@ -10,5 +9,4 @@ export default commandLineArgs => {
     output: [
       { file: 'bundle.js', format: 'cjs' },
     ]
-  }
 };

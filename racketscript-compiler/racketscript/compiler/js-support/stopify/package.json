@@ -1,6 +1,7 @@
 {
     "name": "racketscript",
     "version": "0.0.1",
+    "type": "commonjs",
     "dependencies": {
       "@babel/core": "^7.15.5",
       "@babel/preset-env": "^7.15.6",

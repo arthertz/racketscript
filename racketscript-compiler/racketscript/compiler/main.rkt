@@ -58,6 +58,8 @@
 ;; Path-String -> Path
 ;; Return path of support file named f
 (define (support-file f)
+  (display "File found: ")
+  (displayln (build-path racketscript-dir "compiler" "js-support" (js-target) f))
   (build-path racketscript-dir "compiler" "js-support" (js-target) f))
 
 ;; PathString -> Path
@@ -128,7 +130,7 @@
   (when (equal? (js-target) "stopify")
     (format-copy-file+ (support-file "rollup.config.js")
                        (output-directory)
-                       (list default-module))))
+                       '())))
 
 ;; -> Void
 (define (copy-runtime-files)
