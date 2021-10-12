@@ -51,7 +51,8 @@
 (define *targets* (list "plain"
                         "babel"
                         "webpack"
-                        "closure-compiler"))
+                        "closure-compiler"
+                        "stopify"))
 (define js-target (make-parameter "plain"))
 
 ;; Path-String -> Path
@@ -122,6 +123,10 @@
               (output-directory))
   (when (equal? (js-target) "webpack")
     (format-copy-file+ (support-file "webpack.config.js")
+                       (output-directory)
+                       (list default-module)))
+  (when (equal? (js-target) "stopify")
+    (format-copy-file+ (support-file "rollup.config.js")
                        (output-directory)
                        (list default-module))))
 
@@ -315,7 +320,7 @@
    ["--lift-returns" "Translate self tail calls to loops"
     (enabled-optimizations (set-add (enabled-optimizations) lift-returns))]
    #:multi
-   [("-t" "--target") target "Build target environment [plain|webpack|closure-compiler|babel]"
+   [("-t" "--target") target "Build target environment [plain|webpack|closure-compiler|babel|stopify]"
     (if (member target *targets*)
         (js-target target)
         (error "Unexpected target: " target))]
