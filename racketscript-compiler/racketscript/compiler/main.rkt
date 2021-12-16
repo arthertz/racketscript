@@ -43,6 +43,8 @@
 (define enabled-optimizations (make-parameter (set)))
 (define input-from-stdin? (make-parameter #f))
 (define recompile-all-modules? (make-parameter #f))
+(define stack-size (make-parameter #f))
+(define restore-frames (make-parameter #f))
 
 ;; Compiler for ES6 to ES5 compilation.
 ;; - "plain"
@@ -162,7 +164,35 @@
   ;; TODO: Use NPM + some build tool to do this cleanly
   (parameterize ([current-directory (output-directory)])
     (unless (skip-npm-install)
-      (system "npm install"))))
+      (system "npm install"))
+
+  (when (equal? (js-target) "stopify")
+    (define directory-string (path->string (output-directory)))
+    ; run rollup
+    (define rollup-cmd
+      (apply string-append
+        (list "rollup --input "
+              directory-string
+              " -o "
+              directory-string
+              " -f cjs --config rollup.config.js")))
+
+    (system rollup-cmd)
+    ; collect stopify compiler args (if any)
+    (define stopify-cmd
+      (apply string-append
+        (list "stopify --require-runtime "
+              (if (stack-size)
+                (string-append "--stackSize " (number->string (stack-size)) " ")
+                "")
+              (if (restore-frames)
+                (string-append "--restoreFrames " (number->string (restore-frames)) " ")
+                "")
+              directory-string
+              " "
+              directory-string)))
+      ; run the stopify compiler
+      (system stopify-cmd))))
 
 ;;;; Generate stub module
 
@@ -321,6 +351,10 @@
     (enabled-optimizations (set-add (enabled-optimizations) flatten-if-else))]
    ["--lift-returns" "Translate self tail calls to loops"
     (enabled-optimizations (set-add (enabled-optimizations) lift-returns))]
+   ["--stack-size" STACK-SIZE  "Set custom stack size for stopify build target"
+    (stack-size (string->number STACK-SIZE))]
+   ["--restore-frames" RESTORE-FRAMES "Set custom restore frames for stopify build target"
+    (restore-frames (string->number RESTORE-FRAMES))]
    #:multi
    [("-t" "--target") target "Build target environment [plain|webpack|closure-compiler|babel|stopify]"
     (if (member target *targets*)
